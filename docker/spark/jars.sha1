@@ -1,0 +1,8 @@
+a65839fbf1869f81a1632e09f415e586922e4f80  org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
+02deec3a0ad83d13d032b1812421b23d7a961eea  com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+8083a378e42f6d04c5a78cb6e8566f59f4e9ed1c  io/delta/delta-spark_2.12/3.3.3/delta-spark_2.12-3.3.3.jar
+a5bf8cebb3a669f83b14a8f4a707545ed861303d  io/delta/delta-storage/3.3.3/delta-storage-3.3.3.jar
+cbeb2a0efa9b9921870f2bbd1860f9a26da932d7  org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar
+e6c11ec7275c0b03929fed2ec52eaaf75c411ddb  org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar
+a2f55251deb3d31a21903a0cfbd4d1fa6b7463ca  org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar
+8970fd110c965f285ed4c6e40be7630c62db6f68  org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar

@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+docker/.env
+.env
+# локальные прогоны генератора и временные файлы
+out/
+tmp/
+~$*.docx
+
+# jar-ы Spark скачиваются вручную (Maven из РФ медленный), в git не кладём
+docker/spark/jars/*.jar

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blogsim"
+version = "0.1.0"
+description = "Генератор данных платформы аналитики блогов с управляемыми дефектами"
+requires-python = ">=3.11"
+dependencies = [
+    "faker>=30",
+    "pyyaml>=6",
+    "confluent-kafka>=2.5",
+    "boto3>=1.34",
+    "psycopg[binary]>=3.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+blogsim = "blogsim.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["blogsim*"]
+
+[tool.setuptools.package-data]
+blogsim = ["*.yaml"]

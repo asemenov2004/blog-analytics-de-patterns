@@ -1,0 +1,45 @@
+# Конфигурация генератора по умолчанию. Свои конфиги накладываются поверх (--config),
+# точечные правки — через --set defects.duplicates_pct=5.
+seed: 42
+
+catalog:
+  users: 10000
+  blogs: 200
+  articles: 5000
+
+traffic:
+  sessions_per_minute: 120     # интенсивность начала сессий (пуассоновский поток)
+  mean_pageviews: 5            # среднее число событий в сессии
+  mean_gap_s: 45               # средний интервал между событиями внутри сессии
+  max_gap_s: 1500              # потолок интервала (меньше таймаута сессии 30 мин)
+  click_share: 0.3             # доля событий click среди page_view
+  same_blog_share: 0.6         # вероятность остаться в том же блоге при переходе
+
+defects:
+  duplicates_pct: 1.0          # повторная доставка того же события
+  duplicate_max_delay_s: 60
+  late_pct: 1.0                # опоздавшие события (задержка за пределами watermark)
+  late_min_delay_s: 900
+  late_max_delay_s: 21600
+  out_of_order_pct: 5.0        # перемешивание в пределах watermark
+  out_of_order_max_s: 30
+  malformed_pct: 0.5           # битый JSON / нет поля / не тот тип
+  bots_pct: 2.0                # доля сессий-ботов
+  orphan_refs_pct: 0.2         # ссылки на несуществующие статьи
+  hot_users: 0                 # перекос: N «горячих» пользователей...
+  hot_users_share: 0.0         # ...получают такую долю сессий
+  hot_articles: 0
+  hot_articles_share: 0.0
+  missing_success_pct: 0.0     # batch: партиции без маркера _SUCCESS
+  pauses: []                   # обрывы потока: [{at_min: 30, duration_min: 10}]
+
+schema:
+  version: 1                   # стартовая версия схемы событий
+  changes: []                  # смена версии по ходу: [{at_min: 60, version: 2}]
+
+storage:
+  landing_bucket: landing
+  truth_bucket: truth
+  lake_bucket: lake
+  visits_topic: visits
+  visits_partitions: 4

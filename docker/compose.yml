@@ -1,0 +1,116 @@
+# Стенд платформы аналитики блогов. Поднимаем по профилям, а не всё сразу:
+#   docker compose -f docker/compose.yml --profile core up -d
+#   docker compose -f docker/compose.yml run --rm generator bootstrap
+#   docker compose -f docker/compose.yml run --rm spark spark-submit /opt/pipelines/spark/smoke/delta_s3_smoke.py
+# Учётные данные — dev-значения по умолчанию, переопределяются в docker/.env (см. .env.example).
+name: blog-de
+
+x-s3-env: &s3-env
+  S3_ENDPOINT: http://seaweedfs:8333
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:-blogdev}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:-blogdev-secret}
+
+services:
+  # ---------------------------------------------------------------- core
+  postgres:
+    image: postgres:16.15
+    profiles: [core]
+    command: ["postgres", "-c", "wal_level=logical", "-c", "max_replication_slots=4", "-c", "max_wal_senders=4"]
+    environment:
+      POSTGRES_DB: blog
+      POSTGRES_USER: ${PG_USER:-blog}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-blog}
+    ports: ["15432:5432"]
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d blog"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy: {resources: {limits: {memory: 512m}}}
+
+  redpanda:
+    image: redpandadata/redpanda:v26.2.4
+    profiles: [core]
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+      - --schema-registry-addr=internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --pandaproxy-addr=internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr=internal://redpanda:8082,external://localhost:18082
+    ports: ["19092:19092", "18081:18081", "18082:18082", "19644:9644"]
+    volumes: [redpanda_data:/var/lib/redpanda/data]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    deploy: {resources: {limits: {memory: 1536m}}}
+
+  console:
+    image: redpandadata/console:v3.12.0
+    profiles: [core]
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      SCHEMAREGISTRY_ENABLED: "true"
+      SCHEMAREGISTRY_URLS: http://redpanda:8081
+    ports: ["18080:8080"]
+    depends_on: {redpanda: {condition: service_healthy}}
+    deploy: {resources: {limits: {memory: 256m}}}
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    profiles: [core]
+    entrypoint: ["/bin/sh", "/s3-entrypoint.sh"]
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-blogdev}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-blogdev-secret}
+    ports: ["18333:8333", "19333:9333"]
+    volumes:
+      - s3_data:/data
+      - ./seaweedfs/s3-entrypoint.sh:/s3-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -S -O /dev/null http://127.0.0.1:8333/ 2>&1 | grep -q 'HTTP/'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    deploy: {resources: {limits: {memory: 768m}}}
+
+  # ---------------------------------------------------------------- инструменты
+  generator:
+    build: {context: .., dockerfile: docker/generator/Dockerfile}
+    image: blog-de/generator:local
+    profiles: [tools]
+    environment:
+      <<: *s3-env
+      KAFKA_BOOTSTRAP: redpanda:9092
+      PG_DSN: postgresql://${PG_USER:-blog}:${PG_PASSWORD:-blog}@postgres:5432/blog
+    volumes: [../generator/config:/app/config:ro]
+
+  # ---------------------------------------------------------------- spark
+  spark:
+    build: {context: ./spark}
+    image: blog-de/spark:local
+    profiles: [spark]
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-blogdev}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-blogdev-secret}
+      KAFKA_BOOTSTRAP: redpanda:9092
+    ports: ["4040:4040"]
+    volumes:
+      - ../pipelines:/opt/pipelines:ro
+      - spark_work:/opt/work
+    deploy: {resources: {limits: {memory: 3g}}}
+
+volumes:
+  pg_data:
+  redpanda_data:
+  s3_data:
+  spark_work:
