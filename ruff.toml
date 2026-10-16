@@ -7,4 +7,4 @@ select = ["E", "F", "W", "I", "B", "UP"]
 ignore = ["B905"]  # zip без strict — осознанно, длины совпадают по построению
 
 [lint.isort]
-known-first-party = ["blogsim", "docx_report", "meta"]
+known-first-party = ["blogsim", "docx_report", "meta", "common", "lab_common"]

@@ -41,5 +41,14 @@ storage:
   landing_bucket: landing
   truth_bucket: truth
   lake_bucket: lake
+  staging_bucket: staging      # «тестовое окружение» для репликаторов
   visits_topic: visits
   visits_partitions: 4
+  staging_visits_topic: visits_staging
+  provider_topic: provider_events
+  provider_dlq_topic: provider_events_dlq
+
+provider:
+  devices: 2000                # размер справочника устройств внешнего поставщика
+  change_pct: 2.0              # доля строк, меняющихся от снимка к снимку
+  new_pct: 0.5                 # доля новых устройств в снимке

@@ -2,6 +2,7 @@
 #   docker compose -f docker/compose.yml --profile core up -d
 #   docker compose -f docker/compose.yml run --rm generator bootstrap
 #   docker compose -f docker/compose.yml run --rm spark spark-submit /opt/pipelines/spark/smoke/delta_s3_smoke.py
+# Профили: core | spark | tools | airflow (Airflow + trigger-listener) | cdc (Kafka Connect + Debezium)
 # Учётные данные — dev-значения по умолчанию, переопределяются в docker/.env (см. .env.example).
 name: blog-de
 
@@ -83,6 +84,17 @@ services:
       retries: 30
     deploy: {resources: {limits: {memory: 768m}}}
 
+  pg-init:
+    # Идемпотентно доводит существующий том до актуального состояния (initdb выполняется только на пустом томе)
+    image: postgres:16.15
+    profiles: [core]
+    depends_on: {postgres: {condition: service_healthy}}
+    environment:
+      PGPASSWORD: ${PG_PASSWORD:-blog}
+    entrypoint: ["sh", "-c", "for f in /init/*.sql; do psql -v ON_ERROR_STOP=1 -h postgres -U ${PG_USER:-blog} -d blog -q -f $$f || exit 1; done"]
+    volumes: [./postgres/init:/init:ro]
+    restart: "no"
+
   # ---------------------------------------------------------------- инструменты
   generator:
     build: {context: .., dockerfile: docker/generator/Dockerfile}
@@ -109,8 +121,92 @@ services:
       - spark_work:/opt/work
     deploy: {resources: {limits: {memory: 3g}}}
 
+  # ---------------------------------------------------------------- airflow
+  airflow:
+    build: {context: ./airflow}
+    image: blog-de/airflow:local
+    profiles: [airflow]
+    command: standalone
+    depends_on:
+      postgres: {condition: service_healthy}
+      pg-init: {condition: service_completed_successfully}
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${PG_USER:-blog}:${PG_PASSWORD:-blog}@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/pipelines/airflow/dags
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/passwords.json
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: "30"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW_CONN_LAKE_S3: '{"conn_type": "aws", "login": "${S3_ACCESS_KEY:-blogdev}", "password": "${S3_SECRET_KEY:-blogdev-secret}", "extra": {"endpoint_url": "http://seaweedfs:8333", "region_name": "us-east-1"}}'
+      AIRFLOW_CONN_DWH: postgresql://${PG_USER:-blog}:${PG_PASSWORD:-blog}@postgres:5432/dwh
+      # окружение для контейнеров Spark, которые запускает DockerOperator
+      SPARK_IMAGE: blog-de/spark:local
+      SPARK_NETWORK: blog-de_default
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-blogdev}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-blogdev-secret}
+      KAFKA_BOOTSTRAP: redpanda:9092
+      PG_JDBC_URL: jdbc:postgresql://postgres:5432/blog
+      PG_USER: ${PG_USER:-blog}
+      PG_PASSWORD: ${PG_PASSWORD:-blog}
+    ports: ["18088:8080"]
+    volumes:
+      - ../pipelines:/opt/airflow/pipelines:ro
+      - ./airflow/passwords.json:/opt/airflow/passwords.json
+      - airflow_logs:/opt/airflow/logs  # логи задач переживают пересоздание контейнера
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/api/v2/monitor/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+    deploy: {resources: {limits: {memory: 3g}}}
+
+  trigger-listener:
+    build: {context: .., dockerfile: docker/trigger/Dockerfile}
+    image: blog-de/trigger-listener:local
+    profiles: [airflow]
+    depends_on: {airflow: {condition: service_healthy}}
+    environment:
+      KAFKA_BOOTSTRAP: redpanda:9092
+      AIRFLOW_URL: http://airflow:8080
+      AIRFLOW_USER: admin
+      AIRFLOW_PASSWORD: admin
+    restart: unless-stopped
+    deploy: {resources: {limits: {memory: 256m}}}
+
+  # ---------------------------------------------------------------- cdc
+  connect:
+    image: quay.io/debezium/connect:3.6.2.Final
+    profiles: [cdc]
+    depends_on: {redpanda: {condition: service_healthy}}
+    environment:
+      BOOTSTRAP_SERVERS: redpanda:9092
+      GROUP_ID: blog-connect
+      CONFIG_STORAGE_TOPIC: _connect_configs
+      OFFSET_STORAGE_TOPIC: _connect_offsets
+      STATUS_STORAGE_TOPIC: _connect_status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      HEAP_OPTS: -Xms256m -Xmx768m
+    ports: ["18083:8083"]
+    volumes: [./connect:/connectors:ro]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8083/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    deploy: {resources: {limits: {memory: 1g}}}
+
 volumes:
   pg_data:
   redpanda_data:
   s3_data:
   spark_work:
+  airflow_logs:

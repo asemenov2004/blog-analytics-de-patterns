@@ -79,8 +79,19 @@ class Storage:
     landing_bucket: str
     truth_bucket: str
     lake_bucket: str
+    staging_bucket: str
     visits_topic: str
     visits_partitions: int
+    staging_visits_topic: str
+    provider_topic: str
+    provider_dlq_topic: str
+
+
+@dataclass
+class Provider:
+    devices: int
+    change_pct: float
+    new_pct: float
 
 
 @dataclass
@@ -91,6 +102,7 @@ class Config:
     defects: Defects
     schema: Schema
     storage: Storage
+    provider: Provider
 
 
 @dataclass

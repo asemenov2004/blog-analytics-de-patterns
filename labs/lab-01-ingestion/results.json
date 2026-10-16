@@ -1,0 +1,470 @@
+{
+  "date": "2026-10-14",
+  "generator": {
+    "visits": {
+      "run_id": "lab01-visits",
+      "mode": "batch",
+      "start": 1791936000.0,
+      "hours": 6.0,
+      "seed": 42,
+      "records": 227725,
+      "original_records": 225573,
+      "first_arrival": "2026-10-14T00:00:01.357Z",
+      "last_arrival": "2026-10-14T11:55:02.763Z",
+      "schema_versions": {
+        "1": 227725
+      },
+      "defects": {
+        "bot": 35055,
+        "duplicate": 2152,
+        "late": 2268,
+        "malformed": 1131,
+        "missing_success": 3,
+        "orphan_article": 440,
+        "out_of_order": 11252
+      },
+      "partition_defects": [
+        {
+          "partition": "visits/date=2026-10-14/hour=05",
+          "defect": "missing_success"
+        },
+        {
+          "partition": "visits/date=2026-10-14/hour=06",
+          "defect": "missing_success"
+        },
+        {
+          "partition": "visits/date=2026-10-14/hour=07",
+          "defect": "missing_success"
+        }
+      ]
+    },
+    "oltp": [
+      {
+        "run_id": "lab01-oltp",
+        "mode": "oltp",
+        "ops": {
+          "update_article": 30,
+          "update_user": 129,
+          "insert_user": 90,
+          "insert_article": 35,
+          "delete_user": 16
+        }
+      },
+      {
+        "run_id": "lab01-oltp2",
+        "mode": "oltp",
+        "ops": {
+          "update_user": 37,
+          "delete_user": 10,
+          "insert_user": 44,
+          "insert_article": 15,
+          "update_article": 14
+        }
+      }
+    ],
+    "stream": {
+      "run_id": "lab01-stream",
+      "mode": "stream",
+      "start": 1792169635.3561635,
+      "speed": 20.0,
+      "minutes": 3.0,
+      "seed": 42,
+      "topic": "visits",
+      "records": 35988,
+      "original_records": 35660,
+      "first_arrival": "2026-10-16T16:53:56.713Z",
+      "last_arrival": "2026-10-16T17:53:55.246Z",
+      "schema_versions": {
+        "1": 35988
+      },
+      "defects": {
+        "bot": 5743,
+        "duplicate": 328,
+        "late": 321,
+        "malformed": 181,
+        "orphan_article": 66,
+        "out_of_order": 1746
+      },
+      "partition_defects": []
+    }
+  },
+  "checks": {
+    "incremental": {
+      "landing_partitions": 12,
+      "loaded_partitions": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "08",
+        "09",
+        "10",
+        "11"
+      ],
+      "rows_match_per_partition": {
+        "00": true,
+        "01": true,
+        "02": true,
+        "03": true,
+        "04": true,
+        "08": true,
+        "09": true,
+        "10": true,
+        "11": true
+      },
+      "rows_loaded": 189605,
+      "rows_landing_ready": 189605
+    },
+    "readiness": {
+      "without_success_in_storage": [
+        "05",
+        "06",
+        "07"
+      ],
+      "without_success_in_truth": [
+        "05",
+        "06",
+        "07"
+      ],
+      "not_loaded": [
+        "05",
+        "06",
+        "07"
+      ],
+      "completed_markers": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    "users_incremental": {
+      "rows": 10168,
+      "windows": [
+        [
+          "2026-10-13 00:00:00",
+          "2026-10-16 16:00:00",
+          9869
+        ],
+        [
+          "2026-10-16 16:00:00",
+          "2026-10-16 17:00:00",
+          218
+        ],
+        [
+          "2026-10-16 17:00:00",
+          "2026-10-16 18:00:00",
+          81
+        ]
+      ],
+      "deleted_in_source": 10,
+      "deleted_still_in_bronze": 10
+    },
+    "cdc": {
+      "per_op": {
+        "insert_user": {
+          "oltp": 134,
+          "cdc": 134
+        },
+        "update_user": {
+          "oltp": 166,
+          "cdc": 166
+        },
+        "delete_user": {
+          "oltp": 26,
+          "cdc": 26
+        },
+        "insert_article": {
+          "oltp": 50,
+          "cdc": 50
+        },
+        "update_article": {
+          "oltp": 44,
+          "cdc": 44
+        }
+      },
+      "all_match": true,
+      "deleted_caught": 26,
+      "latency_s": {
+        "p50": 0.514,
+        "p95": 0.916,
+        "max": 1.16
+      }
+    },
+    "full_loader": {
+      "versions": [
+        {
+          "version": 0,
+          "operation": "WRITE",
+          "rows": 2010,
+          "fingerprint": "4134014424042133781"
+        },
+        {
+          "version": 1,
+          "operation": "WRITE",
+          "rows": 2010,
+          "fingerprint": "5600253141713789121"
+        },
+        {
+          "version": 2,
+          "operation": "WRITE",
+          "rows": 2010,
+          "fingerprint": "-8445274901556636985"
+        },
+        {
+          "version": 3,
+          "operation": "WRITE",
+          "rows": 2010,
+          "fingerprint": "2365091955053005232"
+        }
+      ]
+    }
+  },
+  "ingest_runs": {
+    "00": {
+      "run_state": "success",
+      "load_partition": "success",
+      "mark_completed": "success",
+      "wait_for_success_marker": "success"
+    },
+    "01": {
+      "run_state": "success",
+      "wait_for_success_marker": "success",
+      "load_partition": "success",
+      "mark_completed": "success"
+    },
+    "02": {
+      "run_state": "success",
+      "mark_completed": "success",
+      "load_partition": "success",
+      "wait_for_success_marker": "success"
+    },
+    "03": {
+      "run_state": "success",
+      "load_partition": "success",
+      "wait_for_success_marker": "success",
+      "mark_completed": "success"
+    },
+    "04": {
+      "run_state": "success",
+      "load_partition": "success",
+      "wait_for_success_marker": "success",
+      "mark_completed": "success"
+    },
+    "05": {
+      "run_state": "failed",
+      "wait_for_success_marker": "failed",
+      "load_partition": "upstream_failed",
+      "mark_completed": "upstream_failed"
+    },
+    "06": {
+      "run_state": "failed",
+      "wait_for_success_marker": "failed",
+      "load_partition": "upstream_failed",
+      "mark_completed": "upstream_failed"
+    },
+    "07": {
+      "run_state": "failed",
+      "wait_for_success_marker": "failed",
+      "load_partition": "upstream_failed",
+      "mark_completed": "upstream_failed"
+    },
+    "08": {
+      "run_state": "success",
+      "load_partition": "success",
+      "wait_for_success_marker": "success",
+      "mark_completed": "success"
+    },
+    "09": {
+      "run_state": "success",
+      "wait_for_success_marker": "success",
+      "load_partition": "success",
+      "mark_completed": "success"
+    },
+    "10": {
+      "run_state": "success",
+      "wait_for_success_marker": "success",
+      "load_partition": "success",
+      "mark_completed": "success"
+    },
+    "11": {
+      "run_state": "success",
+      "wait_for_success_marker": "success",
+      "load_partition": "success",
+      "mark_completed": "success"
+    }
+  },
+  "compactor": {
+    "run_id": "manual__2026-10-16T16:57:04.005650+00:00",
+    "value": null
+  },
+  "compactor_source": {
+    "run_id": "manual__2026-10-16T16:57:04.005650+00:00",
+    "value": {
+      "pattern": "compactor_source",
+      "rows": 36200,
+      "data_files": 732,
+      "avg_file_kb": 8.2
+    }
+  },
+  "replication": {
+    "passthrough_files": {
+      "run_id": "manual__2026-10-16T17:07:45.936443+00:00",
+      "value": {
+        "pattern": "passthrough_replicator_files",
+        "partitions": 12,
+        "rows": 227725,
+        "identical": true,
+        "mismatched": []
+      }
+    },
+    "passthrough_kafka": {
+      "run_id": "manual__2026-10-16T17:07:45.936443+00:00",
+      "value": {
+        "pattern": "passthrough_replicator_kafka",
+        "messages": 36200,
+        "per_partition": {
+          "0": 9472,
+          "1": 8710,
+          "2": 9210,
+          "3": 8808
+        },
+        "mismatches": 0
+      }
+    },
+    "transformation_users": {
+      "run_id": "manual__2026-10-16T17:07:45.936443+00:00",
+      "value": {
+        "pattern": "transformation_replicator",
+        "rows_source": 10087,
+        "rows_replica": 10087,
+        "dropped_present": [],
+        "pii_leaks": {
+          "email": 0,
+          "first_name": 0,
+          "last_name": 0
+        },
+        "non_pii_mismatches": 0,
+        "replica_columns": [
+          "user_id",
+          "email",
+          "first_name",
+          "last_name",
+          "country",
+          "registered_at",
+          "updated_at"
+        ]
+      }
+    }
+  },
+  "full_loader": {
+    "delta_runs": [
+      {
+        "run_id": "external-e88b7591-31db-4e32-98dc-b35f94c662cd",
+        "state": "success",
+        "tasks": {
+          "resolve_input": "success",
+          "full_load_delta": "success",
+          "full_load_postgres": "success"
+        },
+        "delta": {
+          "pattern": "full_loader",
+          "input": "s3a://landing/providers/devices/published_at=20261016T163911_e88b7591/devices.jsonl",
+          "rows": 2010,
+          "delta_version": 0,
+          "operation": "WRITE"
+        },
+        "postgres": {
+          "rows": 2010,
+          "table": "devices_v20261016165339",
+          "dropped_versions": []
+        }
+      },
+      {
+        "run_id": "external-780c4b16-a510-49fa-a2b2-bbd1c38dbe31",
+        "state": "success",
+        "tasks": {
+          "resolve_input": "success",
+          "full_load_delta": "success",
+          "full_load_postgres": "success"
+        },
+        "delta": {
+          "pattern": "full_loader",
+          "input": "s3a://landing/providers/devices/published_at=20261016T165812_780c4b16/devices.jsonl",
+          "rows": 2010,
+          "delta_version": 1,
+          "operation": "WRITE"
+        },
+        "postgres": {
+          "rows": 2010,
+          "table": "devices_v20261016165815",
+          "dropped_versions": []
+        }
+      },
+      {
+        "run_id": "external-bd8ec9a1-f803-45ed-bd7c-9ec7081ab44d",
+        "state": "success",
+        "tasks": {
+          "resolve_input": "success",
+          "full_load_delta": "success",
+          "full_load_postgres": "success"
+        },
+        "delta": {
+          "pattern": "full_loader",
+          "input": "s3a://landing/providers/devices/published_at=20261016T172236_bd8ec9a1/devices.jsonl",
+          "rows": 2010,
+          "delta_version": 2,
+          "operation": "WRITE"
+        },
+        "postgres": {
+          "rows": 2010,
+          "table": "devices_v20261016172239",
+          "dropped_versions": []
+        }
+      },
+      {
+        "run_id": "external-e4039782-67e5-43c9-ae73-35a01662e2ce",
+        "state": "success",
+        "tasks": {
+          "resolve_input": "success",
+          "full_load_delta": "success",
+          "full_load_postgres": "success"
+        },
+        "delta": {
+          "pattern": "full_loader",
+          "input": "s3a://landing/providers/devices/published_at=20261016T172310_e4039782/devices.jsonl",
+          "rows": 2010,
+          "delta_version": 3,
+          "operation": "WRITE"
+        },
+        "postgres": {
+          "rows": 2010,
+          "table": "devices_v20261016172426",
+          "dropped_versions": [
+            "devices_v20261016165339"
+          ]
+        }
+      }
+    ],
+    "postgres": {
+      "versions": {
+        "devices_v20261016165815": 2010,
+        "devices_v20261016172239": 2010,
+        "devices_v20261016172426": 2010
+      },
+      "view_points_to": "devices_v20261016172426",
+      "view_rows": 2010
+    }
+  },
+  "external_trigger": {
+    "events": 4,
+    "dlq": 1,
+    "external_runs": 4
+  }
+}

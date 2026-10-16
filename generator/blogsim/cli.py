@@ -4,6 +4,7 @@
   blogsim batch --start ... --hours 24      JSONL-файлы визитов по часам + _SUCCESS
   blogsim stream --minutes 10 --speed 1     визиты в Kafka в реальном времени
   blogsim oltp --ops 500 --per-second 5     поток изменений в Postgres
+  blogsim provider [--no-event]             снимок справочника устройств + событие о публикации
 
 Журнал дефектов (ground truth) — в бакет truth (или --out dir:<путь> для локального прогона).
 """
@@ -57,7 +58,8 @@ def cmd_bootstrap(cfg: Config, conn: Connections, args) -> dict:
     if not args.skip_s3:
         client = s3_client(conn)
         existing = {b["Name"] for b in client.list_buckets().get("Buckets", [])}
-        wanted = [cfg.storage.landing_bucket, cfg.storage.truth_bucket, cfg.storage.lake_bucket]
+        st = cfg.storage
+        wanted = [st.landing_bucket, st.truth_bucket, st.lake_bucket, st.staging_bucket]
         for b in wanted:
             if b not in existing:
                 client.create_bucket(Bucket=b)
@@ -66,11 +68,14 @@ def cmd_bootstrap(cfg: Config, conn: Connections, args) -> dict:
         from confluent_kafka.admin import AdminClient, NewTopic
 
         admin = AdminClient({"bootstrap.servers": conn.kafka_bootstrap})
-        topic = cfg.storage.visits_topic
-        if topic not in admin.list_topics(timeout=15).topics:
-            fut = admin.create_topics([NewTopic(topic, cfg.storage.visits_partitions, 1)])[topic]
+        st = cfg.storage
+        wanted_topics = {st.visits_topic: st.visits_partitions, st.staging_visits_topic: st.visits_partitions,
+                         st.provider_topic: 1, st.provider_dlq_topic: 1}
+        existing_topics = admin.list_topics(timeout=15).topics
+        new = [NewTopic(t, n, 1) for t, n in wanted_topics.items() if t not in existing_topics]
+        for fut in (admin.create_topics(new).values() if new else []):
             fut.result(timeout=30)
-        result["topics"] = [topic]
+        result["topics"] = list(wanted_topics)
     if not args.skip_pg:
         import psycopg
 
@@ -149,6 +154,17 @@ def cmd_oltp(cfg: Config, conn: Connections, args) -> dict:
     return summary
 
 
+def cmd_provider(cfg: Config, conn: Connections, args) -> dict:
+    from confluent_kafka import Producer
+
+    from .provider import publish
+
+    client = s3_client(conn)
+    producer = None if args.no_event else Producer({"bootstrap.servers": conn.kafka_bootstrap})
+    rng = random.Random(args.seed if args.seed is not None else time.time_ns())
+    return publish(cfg, S3Storage(client, cfg.storage.landing_bucket), producer, rng, not args.no_event)
+
+
 # ------------------------------------------------------------------ разбор аргументов
 def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
@@ -183,6 +199,11 @@ def build_parser() -> argparse.ArgumentParser:
     ol.add_argument("--per-second", type=float, default=5)
     ol.add_argument("--seed", type=int, help="seed изменений (по умолчанию случайный)")
     ol.set_defaults(func=cmd_oltp)
+
+    pr = sub.add_parser("provider", parents=[common], help="снимок справочника устройств + событие")
+    pr.add_argument("--no-event", action="store_true", help="только файл, без события в топик")
+    pr.add_argument("--seed", type=int, help="seed изменений снимка (по умолчанию случайный)")
+    pr.set_defaults(func=cmd_provider)
     return p
 
 

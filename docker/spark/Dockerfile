@@ -19,6 +19,7 @@ RUN cd /opt/spark/jars \
  && mkdir -p /opt/work && chown spark /opt/work
 
 COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
+COPY log4j2.properties /opt/spark/conf/log4j2.properties
 ENV PATH="/opt/spark/bin:${PATH}"
 USER spark
 WORKDIR /opt/work

@@ -157,3 +157,21 @@ def test_batch_to_dir_matches_truth(tmp_path: Path):
     truth = (tmp_path / "truth" / "runs" / "t1" / "defects.jsonl").read_text().splitlines()
     dup_in_truth = sum("duplicate" in json.loads(x)["defects"] for x in truth)
     assert dup_in_truth == summary["defects"]["duplicate"] == summary["records"] - summary["original_records"]
+
+
+# ------------------------------------------------------------------ внешний поставщик
+def test_provider_snapshots_differ_but_share_base(tmp_path: Path):
+    from blogsim.provider import publish
+
+    cfg = load_config()
+    storage = DirStorage(tmp_path)
+    a = publish(cfg, storage, None, random.Random(1), send_event=False)
+    b = publish(cfg, storage, None, random.Random(2), send_event=False)
+    rows_a = [json.loads(x) for x in (tmp_path / a["key"]).read_text().splitlines()]
+    assert len(rows_a) == a["rows"] == cfg.provider.devices + a["added"]
+    assert not any("updated" in k or "modified" in k for k in rows_a[0])  # нет колонки «изменено»
+    assert (a["changed"], a["added"]) != (0, 0)
+    rows_b = [json.loads(x) for x in (tmp_path / b["key"]).read_text().splitlines()]
+    assert rows_a != rows_b, "поставщик неидемпотентен: снимки различаются"
+    base = {r["device_id"] for r in rows_a if r["device_id"] <= cfg.provider.devices}
+    assert len(base) == cfg.provider.devices

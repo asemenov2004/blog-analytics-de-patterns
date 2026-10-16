@@ -18,6 +18,8 @@
 | SeaweedFS S3 (бакеты `landing`, `lake`, `truth`) | `core` | `http://localhost:18333` |
 | Spark 3.5.8 + Delta 3.3.3 | `spark` | Spark UI `http://localhost:4040` во время джобы |
 | Генератор `blogsim` | `tools` | запускается через `docker compose run` |
+| Airflow 3.3.2 (+ trigger-listener) | `airflow` | http://localhost:18088 (admin / admin) |
+| Kafka Connect + Debezium 3.6.2 | `cdc` | `http://localhost:18083` |
 
 Логины и пароли — dev-значения по умолчанию (см. [docker/.env.example](docker/.env.example)).
 
@@ -46,16 +48,24 @@ docker compose -f docker/compose.yml --profile core --profile spark down
 > Пути к конфигам генератора передавай относительно `/app`, например `--config config/stream-demo.yaml`.
 > Для `spark-submit /opt/...` это не мешает: MSYS не трогает пути, которых нет в Windows. Если тронет — `MSYS_NO_PATHCONV=1`.
 
+## Лабы
+
+| № | Тема | Статус |
+|---|---|---|
+| 0 | Стенд, генератор, процесс | ✅ `lab-00` |
+| 1 | [Приём данных (гл. 2)](labs/lab-01-ingestion/) | ✅ |
+
 ## Генератор `blogsim`
 
 Модель трафика (сессии пользователей) → доставка с дефектами → приёмники. Детерминирован от `seed`.
 
 | Команда | Что делает |
 |---|---|
-| `bootstrap` | бакеты S3, топик `visits`, сидинг Postgres. Повторный запуск безопасен |
+| `bootstrap` | бакеты S3, топики, сидинг Postgres. Повторный запуск безопасен |
 | `batch --start ... --hours N` | JSONL по часам доставки `landing/visits/date=/hour=` + `_SUCCESS` |
 | `stream --minutes N [--speed K]` | визиты в топик `visits` в реальном времени, ключ — `user_id` |
 | `oltp --ops N --per-second R` | вставки, обновления и удаления в `users` / `articles` |
+| `provider` | снимок справочника устройств «внешнего поставщика» + событие в `provider_events` |
 
 Дефекты настраиваются в [defaults.yaml](generator/blogsim/defaults.yaml), своими YAML (`--config`) или точечно (`--set`):
 

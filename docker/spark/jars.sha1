@@ -6,3 +6,4 @@ cbeb2a0efa9b9921870f2bbd1860f9a26da932d7  org/apache/spark/spark-sql-kafka-0-10_
 e6c11ec7275c0b03929fed2ec52eaaf75c411ddb  org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar
 a2f55251deb3d31a21903a0cfbd4d1fa6b7463ca  org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar
 8970fd110c965f285ed4c6e40be7630c62db6f68  org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar
+264310fd7b2cd76738787dc0b9f7ea2e3b11adc1  org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar
