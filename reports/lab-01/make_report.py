@@ -37,6 +37,12 @@ def code(rel: str, start: str | None = None, end: str | None = None) -> str:
     return "\n".join(lines[i:j + 1])
 
 
+def plural(k: int, one: str, few: str, many: str) -> str:
+    k10, k100 = k % 10, k % 100
+    form = one if k10 == 1 and k100 != 11 else few if 2 <= k10 <= 4 and not 12 <= k100 <= 14 else many
+    return f"{n(k)} {form}"
+
+
 def n(x) -> str:
     return f"{x:,}".replace(",", " ") if isinstance(x, int) else str(x).replace(".", ",")
 
@@ -124,7 +130,8 @@ def build() -> None:
               "Full Loader на Postgres: версионная таблица и переключение представления")
     rows = [["Версия Delta", "Операция", "Строк", "Отпечаток данных"]]
     rows += [[v["version"], v["operation"], n(v["rows"]), v["fingerprint"][:12] + "…"] for v in versions]
-    D.para(f"Проверка. Таблица {D.next_tab()} показывает историю Delta-таблицы после двух публикаций снимка. "
+    D.para(f"Проверка. Таблица {D.next_tab()} показывает историю Delta-таблицы после "
+           f"{plural(len(versions), 'публикации', 'публикаций', 'публикаций')} снимка. "
            "Каждая полная загрузка дала новую версию, а предыдущая читается через versionAsOf. "
            "Отпечатки разные, потому что поставщик неидемпотентен: каждая публикация меняет часть устройств.")
     D.table(rows, "Версии bronze/devices (time travel)", widths=[3, 4, 3, 6])
@@ -241,7 +248,7 @@ def build() -> None:
     D.listing(code("pipelines/spark/ingestion/replicate_kafka.py", "src = read(args.source)", ".save())"),
               "Репликация топика с сохранением порядка")
     D.para(f"Проверка. Файлы: {rf['partitions']} партиций, {n(rf['rows'])} строк. Мультимножество строк каждой "
-           f"партиции совпало побайтно: identical = {rf['identical']}. Kafka: {n(rk['messages'])} сообщений; "
+           f"партиции {'совпало побайтно' if rf['identical'] else 'НЕ совпало'}. Kafka: {n(rk['messages'])} сообщений; "
            f"последовательности (key, value, headers) по каждой партиции совпали, расхождений — {rk['mismatches']}.")
     D.para("Компромиссы. Spark не сохраняет число и имена файлов. Если для потребителя это важно, нужно "
            "копирование средствами хранилища. Повторный запуск репликации топика допишет копии ещё раз, "
@@ -256,9 +263,11 @@ def build() -> None:
            f"колонки читаются строками (листинг {D.next_lst()}).")
     D.listing(code("pipelines/spark/ingestion/replicate_users_pii.py", "PII_RULES = {", "out = out.drop"),
               "Правила обработки PII при репликации")
-    D.para(f"Проверка. Строк в источнике {n(rt['rows_source'])}, в реплике {n(rt['rows_replica'])}. Удалённых "
-           f"колонок в реплике нет ({rt['dropped_present'] or 'пусто'}). Совпадений исходных значений PII "
-           f"с репликой: {rt['pii_leaks']}. Расхождений в остальных колонках: {rt['non_pii_mismatches']}.")
+    leaks = ", ".join(f"{k} — {v}" for k, v in rt["pii_leaks"].items())
+    dropped = "отсутствует" if not rt["dropped_present"] else "ПРИСУТСТВУЕТ"
+    D.para(f"Проверка. Строк в источнике {n(rt['rows_source'])}, в реплике {n(rt['rows_replica'])}. Колонка "
+           f"birth_date в реплике {dropped}. Строк, где значение PII в реплике совпало с исходным: {leaks}. "
+           f"Расхождений в остальных колонках: {rt['non_pii_mismatches']}.")
     D.para("Компромиссы. Собственная логика преобразования — новый риск испортить данные. Главная "
            "опасность — рассинхронизация: появится новое PII-поле, а правила о нём не знают. Поэтому "
            "правила вынесены в одно место.")
@@ -270,8 +279,9 @@ def build() -> None:
     D.para("Проблема. Потоковая синхронизация топика с хранилищем делает частые короткие коммиты, и каждый "
            "оставляет мелкие файлы. Со временем листинг и открытие файлов занимают больше времени, чем сама "
            "обработка.")
-    D.para(f"Решение. Поток visits ({n(src_info['rows'])} событий) записан в bronze/visits_stream "
-           f"микробатчами по 200 сообщений. Получилось {n(src_info['data_files'])} файлов со средним размером "
+    D.para(f"Решение. Поток visits ({n(src_info['rows'])} событий) записан в отдельную Delta-таблицу bronze "
+           f"микробатчами по 200 сообщений. Получилось {plural(src_info['data_files'], 'файл', 'файла', 'файлов')} "
+           "со средним размером "
            f"{n(src_info['avg_file_kb'])} КБ. Затем отдельный DAG выполняет OPTIMIZE (слияние файлов в "
            "новой транзакции) и VACUUM (физическое удаление файлов, вышедших из журнала, "
            f"листинг {D.next_lst()}).")
@@ -287,10 +297,12 @@ def build() -> None:
         ["count(), с (медиана)", n(b["count_s_median"]), n(a["count_s_median"]), n(z["count_s_median"])],
         ["Строк", n(b["rows"]), n(a["rows"]), n(z["rows"])],
     ], "Эффект уплотнения", widths=[6, 3, 3.5, 3.5])
-    D.para(f"Проверка (рисунок {D.fig}, таблица {D.tab}). OPTIMIZE заменил {n(v['files_removed'])} файлов на "
-           f"{n(v['files_added'])}. После OPTIMIZE старые файлы ещё лежат в хранилище: это свойство книги "
-           "«уплотнение не удаляет исходные файлы». Их убрал только VACUUM. Данные не изменились: число "
-           f"строк и сумма хешей совпали (data_unchanged = {v['data_unchanged']}).")
+    same = ("Данные не изменились: число строк и сумма хешей совпали." if v["data_unchanged"]
+            else "ВНИМАНИЕ: данные после уплотнения отличаются.")
+    D.para(f"Проверка (рисунок {D.fig}, таблица {D.tab}). OPTIMIZE заменил "
+           f"{plural(v['files_removed'], 'файл', 'файла', 'файлов')} на {n(v['files_added'])}. После OPTIMIZE "
+           "старые файлы ещё лежат в хранилище: как и предупреждает книга, уплотнение исходные файлы не "
+           f"удаляет. Их убрал только VACUUM. {same}")
     D.para("Компромиссы. Уплотнение — обычная вычислительная джоба, и запускать её часто дорого, а редко — "
            "потребители дольше работают с мелкими файлами. VACUUM с нулевым порогом хранения применён "
            "только в демо: в проде он ломает time travel и может удалить файлы незавершённой записи.")
@@ -305,7 +317,7 @@ def build() -> None:
            "контекст: само событие, версию и хост триггера, offset сообщения. Идентификатор запуска "
            "external-<event_id> делает повторную доставку события безопасной: Airflow ответит 409. Любая "
            "ошибка запуска не теряет событие, оно уходит в DLQ (provider_events_dlq), "
-           f"листинг {D.next_lst()}. DAG devices_full_load имеет schedule=None, так что запустить его может "
+           f"листинг {D.next_lst()}. DAG devices_full_load имеет `schedule=None`, так что запустить его может "
            "только триггер.")
     D.listing(code("pipelines/trigger_listener/listener.py", "def handle(", "return \"dlq\""),
               "Обработчик уведомлений")

@@ -57,9 +57,13 @@ class Report:
             elif t.startswith("Вариант"):
                 set_text(p, "")
             elif t.startswith("Проверил"):
-                k = t.index("_")
                 who, name = teacher or ("Проверил", "")
-                set_text(p, who + " " * max(2, k - len(who) - 6) + "_______________     " + name)
+                # отступ как у строки студента, но длинная фамилия «съедает» часть пробелов, иначе строка
+                # переносится (шрифт пропорциональный — выравнивание приблизительное)
+                student = next(x.text for x in self.d.paragraphs if x.text.startswith("Выполнил"))
+                k, student_name = student.index("_"), student.rsplit("     ", 1)[-1]
+                pad = max(2, k - len(who) - max(0, len(name) - len(student_name)))
+                set_text(p, who + " " * pad + "_______________     " + name)
 
     # --- текст
     def para(self, text: str = "", align=AL.JUSTIFY, bold=False, size=None, indent=True, italic=False,

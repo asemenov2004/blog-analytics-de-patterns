@@ -301,11 +301,44 @@
     }
   },
   "compactor": {
-    "run_id": "manual__2026-10-16T16:57:04.005650+00:00",
-    "value": null
+    "run_id": "manual__2026-10-16T17:35:53.800373+00:00",
+    "value": {
+      "pattern": "compactor",
+      "files_added": 1,
+      "files_removed": 732,
+      "before": {
+        "table_files": 732,
+        "table_mb": 5.86,
+        "list_s": 0.45,
+        "storage_files": 732,
+        "count_s_median": 1.109,
+        "rows": 36200,
+        "fingerprint": "-5507136549467756690",
+        "optimize_s": 8.151
+      },
+      "after_optimize": {
+        "table_files": 1,
+        "table_mb": 3.83,
+        "list_s": 0.366,
+        "storage_files": 733,
+        "count_s_median": 0.502,
+        "rows": 36200,
+        "fingerprint": "-5507136549467756690"
+      },
+      "after_vacuum": {
+        "table_files": 1,
+        "table_mb": 3.83,
+        "list_s": 0.085,
+        "storage_files": 1,
+        "count_s_median": 0.362,
+        "rows": 36200,
+        "fingerprint": "-5507136549467756690"
+      },
+      "data_unchanged": true
+    }
   },
   "compactor_source": {
-    "run_id": "manual__2026-10-16T16:57:04.005650+00:00",
+    "run_id": "manual__2026-10-16T17:35:53.800373+00:00",
     "value": {
       "pattern": "compactor_source",
       "rows": 36200,
