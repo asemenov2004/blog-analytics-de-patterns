@@ -1,0 +1,344 @@
+{
+  "python": "3.12.14",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "sqlite": "3.53.1",
+  "seed": 42,
+  "batch": 250,
+  "series": [
+    {
+      "runs": [
+        {
+          "events": 1000,
+          "bytes": 62850,
+          "seconds": 0.031134500000007392,
+          "rows_s": 32118.71075494267,
+          "outcomes": {
+            "ok": 842,
+            "duplicate": 42,
+            "bot": 42,
+            "late": 32,
+            "schema": 23,
+            "json": 19
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 3,
+            "ms": 0.282599999991362
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 1,
+            "ms": 0.08400000001529406
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 32,
+            "expected": 32
+          },
+          "resume_byte": null,
+          "digest": "e9fb6573a8c6b2c3a7eb653a5360cc396a40a5d5e15923069ed11e651ff349af"
+        },
+        {
+          "events": 1000,
+          "bytes": 62850,
+          "seconds": 0.03152949999991961,
+          "rows_s": 31716.329152144808,
+          "outcomes": {
+            "ok": 842,
+            "duplicate": 42,
+            "bot": 42,
+            "late": 32,
+            "schema": 23,
+            "json": 19
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 3,
+            "ms": 0.2729000000272208
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 1,
+            "ms": 0.08290000005217735
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 32,
+            "expected": 32
+          },
+          "resume_byte": null,
+          "digest": "e9fb6573a8c6b2c3a7eb653a5360cc396a40a5d5e15923069ed11e651ff349af"
+        },
+        {
+          "events": 1000,
+          "bytes": 62850,
+          "seconds": 0.03195260000006783,
+          "rows_s": 31296.357729820957,
+          "outcomes": {
+            "ok": 842,
+            "duplicate": 42,
+            "bot": 42,
+            "late": 32,
+            "schema": 23,
+            "json": 19
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 3,
+            "ms": 0.283800000033807
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 1,
+            "ms": 0.08649999995213875
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 32,
+            "expected": 32
+          },
+          "resume_byte": null,
+          "digest": "e9fb6573a8c6b2c3a7eb653a5360cc396a40a5d5e15923069ed11e651ff349af"
+        }
+      ],
+      "median_s": 0.03152949999991961
+    },
+    {
+      "runs": [
+        {
+          "events": 10000,
+          "bytes": 642099,
+          "seconds": 0.17984639999997398,
+          "rows_s": 55603.003451842495,
+          "outcomes": {
+            "ok": 8434,
+            "duplicate": 422,
+            "bot": 477,
+            "late": 283,
+            "schema": 204,
+            "json": 180
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 8,
+            "ms": 0.8420999999998457
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 6,
+            "ms": 0.613799999996445
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "0a2150b3c6b91f2b0adf738b5499c863292fdfb16a0384cf8a88107eccd0c544"
+        },
+        {
+          "events": 10000,
+          "bytes": 642099,
+          "seconds": 0.17559570000003077,
+          "rows_s": 56949.00273752858,
+          "outcomes": {
+            "ok": 8434,
+            "duplicate": 422,
+            "bot": 477,
+            "late": 283,
+            "schema": 204,
+            "json": 180
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 8,
+            "ms": 0.8431999999629625
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 6,
+            "ms": 0.6132999999408639
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "0a2150b3c6b91f2b0adf738b5499c863292fdfb16a0384cf8a88107eccd0c544"
+        },
+        {
+          "events": 10000,
+          "bytes": 642099,
+          "seconds": 0.17156550000004245,
+          "rows_s": 58286.776770373566,
+          "outcomes": {
+            "ok": 8434,
+            "duplicate": 422,
+            "bot": 477,
+            "late": 283,
+            "schema": 204,
+            "json": 180
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 8,
+            "ms": 0.8595000000468644
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 6,
+            "ms": 0.6285000000616492
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "0a2150b3c6b91f2b0adf738b5499c863292fdfb16a0384cf8a88107eccd0c544"
+        }
+      ],
+      "median_s": 0.17559570000003077
+    },
+    {
+      "runs": [
+        {
+          "events": 50000,
+          "bytes": 3276570,
+          "seconds": 0.7985337999999729,
+          "rows_s": 62614.75719625356,
+          "outcomes": {
+            "ok": 42067,
+            "duplicate": 2028,
+            "bot": 2480,
+            "late": 1459,
+            "schema": 975,
+            "json": 991
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 30,
+            "ms": 3.759500000001026
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 28,
+            "ms": 3.301200000009885
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "d33d792e587c30fc01b88983b96b86932b4e885ab8926f8d3937f46168b7cbf2"
+        },
+        {
+          "events": 50000,
+          "bytes": 3276570,
+          "seconds": 0.9091873999999507,
+          "rows_s": 54994.162919550705,
+          "outcomes": {
+            "ok": 42067,
+            "duplicate": 2028,
+            "bot": 2480,
+            "late": 1459,
+            "schema": 975,
+            "json": 991
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 30,
+            "ms": 5.277200000023186
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 28,
+            "ms": 4.026900000098976
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "d33d792e587c30fc01b88983b96b86932b4e885ab8926f8d3937f46168b7cbf2"
+        },
+        {
+          "events": 50000,
+          "bytes": 3276570,
+          "seconds": 1.1514088999999785,
+          "rows_s": 43425.05950753111,
+          "outcomes": {
+            "ok": 42067,
+            "duplicate": 2028,
+            "bot": 2480,
+            "late": 1459,
+            "schema": 975,
+            "json": 991
+          },
+          "static": {
+            "strategy": "static",
+            "hours": 30,
+            "ms": 4.227500000069995
+          },
+          "dynamic": {
+            "strategy": "dynamic",
+            "hours": 28,
+            "ms": 5.315699999982826
+          },
+          "example": {
+            "hour": 22,
+            "before": 0,
+            "after": 56,
+            "expected": 56
+          },
+          "resume_byte": null,
+          "digest": "d33d792e587c30fc01b88983b96b86932b4e885ab8926f8d3937f46168b7cbf2"
+        }
+      ],
+      "median_s": 0.9091873999999507
+    }
+  ],
+  "recovery": {
+    "events": 50000,
+    "bytes": 3276570,
+    "seconds": 3.8486774000000423,
+    "rows_s": 12991.475980813422,
+    "outcomes": {
+      "ok": 42067,
+      "duplicate": 2028,
+      "bot": 2480,
+      "late": 1459,
+      "schema": 975,
+      "json": 991
+    },
+    "static": {
+      "strategy": "static",
+      "hours": 30,
+      "ms": 3.9146000000300774
+    },
+    "dynamic": {
+      "strategy": "dynamic",
+      "hours": 28,
+      "ms": 4.147500000044602
+    },
+    "example": {
+      "hour": 22,
+      "before": 0,
+      "after": 56,
+      "expected": 56
+    },
+    "resume_byte": 1630018,
+    "digest": "d33d792e587c30fc01b88983b96b86932b4e885ab8926f8d3937f46168b7cbf2"
+  }
+}

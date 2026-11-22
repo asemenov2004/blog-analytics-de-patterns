@@ -23,6 +23,8 @@ jobs:
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e "generator[dev]"
       - run: pytest generator/tests -q
+      - run: python labs/lab-02-errors/test_boundary.py
+      - run: python labs/lab-02-errors/bench.py --sizes 512 1024 --repeats 1 --batch 32 --out /tmp/lab02.json
 
   compose:
     runs-on: ubuntu-latest

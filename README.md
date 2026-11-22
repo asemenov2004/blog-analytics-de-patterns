@@ -54,6 +54,7 @@ docker compose -f docker/compose.yml --profile core --profile spark down
 |---|---|---|
 | 0 | Стенд, генератор, процесс | ✅ `lab-00` |
 | 1 | [Приём данных (гл. 2)](labs/lab-01-ingestion/) | ✅ |
+| 2 | [Обработка ошибок, регулируемый объём и замеры (гл. 3)](labs/lab-02-errors/) | ✅ |
 
 ## Генератор `blogsim`
 
